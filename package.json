@@ -1,0 +1,34 @@
+{
+  "name": "sistema-chamados-ti-pyramid",
+  "version": "1.0.0",
+  "description": "Sistema de Chamados T.I. - Pyramid Diamantados",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server-debug.js",
+    "test": "node server.js"
+  },
+  "keywords": [
+    "nodejs",
+    "whatsapp",
+    "ultramsg",
+    "chamados",
+    "suporte"
+  ],
+  "author": "Pyramid Diamantados T.I.",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^16.0.3"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "local"
+  },
+  "homepage": "https://pyramid-chamados.localweb.com.br",
+  "bugs": {
+    "url": "mailto:ti@pyramid.com.br"
+  }
+}

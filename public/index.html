@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Solicitação de T.I. - Pyramid</title>
+  <style>
+    :root {
+      --bg: #f3f4f6;
+      --card: #ffffff;
+      --primary: #2563eb;
+      --text: #111827;
+      --gray: #6b7280;
+      --border: #e5e7eb;
+      --shadow: rgba(0, 0, 0, 0.08);
+    }
+    * {
+      margin: 0; padding: 0; box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    body {
+      background: var(--bg);
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      padding: 40px 16px;
+    }
+    .container {
+      background: var(--card);
+      max-width: 720px;
+      width: 100%;
+      padding: 40px 30px;
+      border-radius: 18px;
+      box-shadow: 0 10px 30px var(--shadow);
+    }
+    h2 {
+      text-align: center;
+      color: var(--primary);
+      font-size: 2rem;
+      margin-bottom: 30px;
+      font-weight: 700;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .section-title {
+      font-size: 1.15rem;
+      color: var(--text);
+      font-weight: 600;
+      margin-bottom: -10px;
+      margin-top: 10px;
+      border-left: 4px solid var(--primary);
+      padding-left: 10px;
+    }
+    .row {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .field {
+      flex: 1 1 250px;
+      display: flex;
+      flex-direction: column;
+    }
+    label {
+      font-weight: 600;
+      color: var(--gray);
+      margin-bottom: 6px;
+    }
+    input, select, textarea {
+      padding: 12px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-size: 15px;
+      background-color: #f9fafb;
+      transition: 0.3s;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+      outline: none;
+    }
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+    button[type="submit"] {
+      background: linear-gradient(to right, #2563eb, #1d4ed8);
+      color: white;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    button:hover {
+      transform: scale(1.02);
+      background: linear-gradient(to right, #1e40af, #1e3a8a);
+    }
+    .alert {
+      display: none;
+      margin-top: 20px;
+      padding: 14px;
+      border-radius: 12px;
+      background-color: #d1fae5;
+      color: #065f46;
+      font-weight: 600;
+      text-align: center;
+      box-shadow: 0 2px 10px rgba(6, 95, 70, 0.2);
+      user-select: none;
+    }
+    @media (max-width: 600px) {
+      .row {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h2>📋 Solicitação de Suporte T.I.</h2>
+    <form id="formChamado">
+      <div class="section-title">🧍 Identificação</div>
+      <div class="row">
+        <div class="field">
+          <label for="nome">👤 Nome</label>
+          <input id="nome" type="text" name="Nome" placeholder="Seu nome completo" required />
+        </div>
+        <div class="field">
+          <label for="setor">🏢 Setor</label>
+          <input id="setor" type="text" name="Setor" placeholder="Ex: Vendas, Produção" required />
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="ramal">📞 Ramal</label>
+          <input id="ramal" type="tel" name="Ramal" placeholder="Ex: 1234" />
+        </div>
+        <div class="field">
+          <label for="celular">📱 Celular (Para confirmação)</label>
+          <input id="celular" type="tel" name="Celular" placeholder="Ex: (11) 99999-0000" required />
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="tipo">🛠️ Tipo de chamado</label>
+          <select id="tipo" name="Tipo de chamado" required>
+            <option value="" hidden selected>Escolha uma opção</option>
+            <option>💻 Suporte Técnico</option>
+            <option>🔧 Manutenção</option>
+            <option>📦 Instalação de Software</option>
+            <option>❓ Dúvida</option>
+            <option>📁 Outro</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="section-title">📝 Detalhes do Chamado</div>
+      <div class="row">
+        <div class="field">
+          <label for="titulo">🧾 Título</label>
+          <input id="titulo" type="text" name="Título" placeholder="Resumo do problema" required />
+        </div>
+        <div class="field">
+          <label for="prioridade">⚠️ Prioridade</label>
+          <select id="prioridade" name="Prioridade" required>
+            <option selected>🔵 Média</option>
+            <option>🔴 Alta</option>
+            <option>🟢 Baixa</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="descricao">🗒️ Descrição</label>
+        <textarea id="descricao" name="Descrição" placeholder="Descreva o problema com o máximo de detalhes..." required></textarea>
+      </div>
+
+      <button type="submit">📨 Enviar Chamado</button>
+    </form>
+
+    <div id="alerta" class="alert" role="alert" aria-live="polite">✅ Chamado enviado com sucesso!</div>
+  </div>
+
+  <script>
+    const alerta = document.getElementById('alerta');
+    const form = document.getElementById('formChamado');
+
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const dados = {
+        nome: form.Nome.value,
+        setor: form.Setor.value,
+        ramal: form.Ramal.value,
+        celular: form.Celular.value,
+        tipo: form['Tipo de chamado'].value,
+        titulo: form.Título.value,
+        prioridade: form.Prioridade.value,
+        descricao: form.Descrição.value,
+      };
+
+      try {
+        const resposta = await fetch('/enviar-chamado', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(dados),
+        });
+
+        if (resposta.ok) {
+          const resultado = await resposta.json();
+          
+          // Mostrar mensagem de sucesso
+          alerta.style.display = 'block';
+          alerta.innerHTML = `
+            <div style="text-align: center;">
+              <strong>${resultado.message}</strong><br>
+              <small>${resultado.backup}</small><br>
+              <div style="margin-top: 10px; font-size: 12px; color: #666;">
+                📱 Chamado enviado para: (11) 99322-5739
+              </div>
+            </div>
+          `;
+          
+          // Resetar formulário
+          form.reset();
+          
+          // Esconder alerta após 6 segundos
+          setTimeout(() => {
+            alerta.style.display = 'none';
+          }, 6000);
+        } else {
+          const erro = await resposta.json();
+          alert(erro.message || 'Erro ao enviar o chamado. Tente novamente.');
+        }
+      } catch (erro) {
+        alert('Erro de conexão com o servidor. Verifique se o sistema da T.I. está ligado.');
+      }
+    });
+  </script>
+
+</body>
+</html>
