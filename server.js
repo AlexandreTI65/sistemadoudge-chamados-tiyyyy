@@ -34,6 +34,7 @@ function obterIPsRede() {
 console.log('🚀 Iniciando sistema...');
 console.log('📡 Ambiente:', process.env.NODE_ENV || 'development');
 console.log('🔌 Porta:', PORT);
+// Force deploy update v2.0
 
 // Função para limpar número de telefone
 function limparNumero(numero) {
