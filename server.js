@@ -60,6 +60,10 @@ function limparNumero(numero) {
 // Função para enviar mensagem via UltraMsg API
 function enviarMensagemWhatsApp(numeroDestino, mensagem, tipoMensagem = 'mensagem') {
     return new Promise((resolve, reject) => {
+        console.log(`🔑 DEBUG: Token = ${ULTRAMSG_TOKEN}`);
+        console.log(`🏢 DEBUG: Instance = ${ULTRAMSG_INSTANCE}`);
+        console.log(`📱 DEBUG: Numero = ${numeroDestino}`);
+        
         const postData = querystring.stringify({
             to: numeroDestino,
             body: mensagem,
