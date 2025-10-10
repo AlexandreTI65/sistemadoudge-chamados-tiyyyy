@@ -10,10 +10,10 @@ require('dotenv').config();
 // Configuração da porta
 const PORT = process.env.PORT || 3000;
 
-// Configurações da UltraMsg
-const ULTRAMSG_TOKEN = process.env.ULTRAMSG_TOKEN || 'ynquqp53ffqmu94z';
-const ULTRAMSG_INSTANCE = process.env.ULTRAMSG_INSTANCE || 'instance145584';
-const WHATSAPP_TI = process.env.WHATSAPP_TI || '5511993225739';
+// Configurações da UltraMsg - FORÇAR TOKEN CORRETO
+const ULTRAMSG_TOKEN = 'ynquqp53ffqmu94zggg'; // HARDCODED PARA FORÇAR ATUALIZAÇÃO
+const ULTRAMSG_INSTANCE = 'instance145584';
+const WHATSAPP_TI = '5511993225739';
 
 // Função para obter IPs da rede local
 function obterIPsRede() {
