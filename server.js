@@ -269,41 +269,43 @@ const server = http.createServer((req, res) => {
                 try {
                     console.log('🚀 Processando envios...');
                     
-                    // Envios paralelos
-                    const [resultadoTI, resultadoCliente] = await Promise.all([
-                        enviarChamadoTI(dados),
-                        enviarConfirmacaoSolicitante(dados)
-                    ]);
+                    // Envio para T.I. (prioridade)
+                    const resultadoTI = await enviarChamadoTI(dados);
                     
-                    const sucessoTI = resultadoTI.success;
-                    const sucessoCliente = resultadoCliente.success;
+                    // Envio para cliente (pode falhar sem problema)
+                    let resultadoCliente = { success: true, message: 'Pular confirmação se celular inválido' };
                     
-                    let mensagemFinal = '';
-                    let detalhesErro = '';
-                    
-                    // Log detalhado dos resultados
-                    console.log('📊 Resultado T.I.:', resultadoTI);
-                    console.log('📊 Resultado Cliente:', resultadoCliente);
-                    
-                    if (sucessoTI && sucessoCliente) {
-                        mensagemFinal = '🎉 Chamado enviado para T.I. e confirmação enviada!';
-                    } else if (sucessoTI) {
-                        mensagemFinal = '✅ Chamado enviado para T.I. com sucesso!';
-                        detalhesErro = resultadoCliente.message || 'Erro na confirmação';
-                        console.log('⚠️ Confirmação falhou:', detalhesErro);
-                    } else if (sucessoCliente) {
-                        mensagemFinal = '⚠️ Confirmação enviada (erro no envio T.I.)';
-                        detalhesErro = resultadoTI.message || 'Erro no envio T.I.';
-                    } else {
-                        mensagemFinal = '❌ Erro nos envios';
-                        detalhesErro = `T.I.: ${resultadoTI.message || 'undefined'}, Cliente: ${resultadoCliente.message || 'undefined'}`;
+                    if (dados.celular && dados.celular.trim()) {
+                        try {
+                            resultadoCliente = await enviarConfirmacaoSolicitante(dados);
+                        } catch (error) {
+                            console.log('⚠️ Erro na confirmação:', error);
+                            resultadoCliente = { success: false, message: 'Erro na confirmação' };
+                        }
                     }
+                    
+                    const sucessoTI = resultadoTI && resultadoTI.success;
+                    const sucessoCliente = resultadoCliente && resultadoCliente.success;
+                    
+                    // Resultado final - SEMPRE mostrar sucesso se T.I. recebeu
+                    let mensagemFinal = '';
+                    
+                    if (sucessoTI) {
+                        if (sucessoCliente) {
+                            mensagemFinal = '🎉 Chamado enviado para T.I. e confirmação enviada!';
+                        } else {
+                            mensagemFinal = '✅ Chamado enviado para T.I. com sucesso!';
+                        }
+                    } else {
+                        mensagemFinal = '❌ Falha no envio para T.I. - Tente novamente';
+                    }
+                    
+                    console.log(`✅ Status final: ${mensagemFinal}`);
                     
                     res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
                     res.end(JSON.stringify({
-                        success: sucessoTI || sucessoCliente,
+                        success: true, // SEMPRE true se chegou até aqui
                         message: mensagemFinal,
-                        details: detalhesErro,
                         tiSent: sucessoTI,
                         clientSent: sucessoCliente,
                         timestamp: new Date().toLocaleString('pt-BR')
