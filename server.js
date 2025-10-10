@@ -132,9 +132,9 @@ function enviarMensagemWhatsApp(numeroDestino, mensagem, tipoMensagem = 'mensage
 
         req.on('error', (error) => {
             console.error(`❌ Erro ${tipoMensagem}:`, error.message);
-            reject({
+            resolve({
                 success: false,
-                message: `❌ Erro de conexão`,
+                message: `❌ Erro de conexão: ${error.message}`,
                 error: error.message
             });
         });
@@ -279,20 +279,33 @@ const server = http.createServer((req, res) => {
                     const sucessoCliente = resultadoCliente.success;
                     
                     let mensagemFinal = '';
+                    let detalhesErro = '';
+                    
+                    // Log detalhado dos resultados
+                    console.log('📊 Resultado T.I.:', resultadoTI);
+                    console.log('📊 Resultado Cliente:', resultadoCliente);
+                    
                     if (sucessoTI && sucessoCliente) {
                         mensagemFinal = '🎉 Chamado enviado para T.I. e confirmação enviada!';
                     } else if (sucessoTI) {
-                        mensagemFinal = '✅ Chamado enviado para T.I. (erro na confirmação)';
+                        mensagemFinal = '✅ Chamado enviado para T.I. com sucesso!';
+                        detalhesErro = resultadoCliente.message || 'Erro na confirmação';
+                        console.log('⚠️ Confirmação falhou:', detalhesErro);
                     } else if (sucessoCliente) {
                         mensagemFinal = '⚠️ Confirmação enviada (erro no envio T.I.)';
+                        detalhesErro = resultadoTI.message || 'Erro no envio T.I.';
                     } else {
                         mensagemFinal = '❌ Erro nos envios';
+                        detalhesErro = `T.I.: ${resultadoTI.message || 'undefined'}, Cliente: ${resultadoCliente.message || 'undefined'}`;
                     }
                     
                     res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
                     res.end(JSON.stringify({
                         success: sucessoTI || sucessoCliente,
                         message: mensagemFinal,
+                        details: detalhesErro,
+                        tiSent: sucessoTI,
+                        clientSent: sucessoCliente,
                         timestamp: new Date().toLocaleString('pt-BR')
                     }));
                     
