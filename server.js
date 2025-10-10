@@ -61,7 +61,6 @@ function limparNumero(numero) {
 function enviarMensagemWhatsApp(numeroDestino, mensagem, tipoMensagem = 'mensagem') {
     return new Promise((resolve, reject) => {
         const postData = querystring.stringify({
-            token: ULTRAMSG_TOKEN,
             to: numeroDestino,
             body: mensagem
         });
@@ -69,7 +68,7 @@ function enviarMensagemWhatsApp(numeroDestino, mensagem, tipoMensagem = 'mensage
         const options = {
             hostname: 'api.ultramsg.com',
             port: 443,
-            path: `/${ULTRAMSG_INSTANCE}/messages/chat`,
+            path: `/${ULTRAMSG_INSTANCE}/messages/chat?token=${ULTRAMSG_TOKEN}`,
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
