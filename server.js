@@ -62,13 +62,14 @@ function enviarMensagemWhatsApp(numeroDestino, mensagem, tipoMensagem = 'mensage
     return new Promise((resolve, reject) => {
         const postData = querystring.stringify({
             to: numeroDestino,
-            body: mensagem
+            body: mensagem,
+            token: ULTRAMSG_TOKEN
         });
 
         const options = {
             hostname: 'api.ultramsg.com',
             port: 443,
-            path: `/${ULTRAMSG_INSTANCE}/messages/chat?token=${ULTRAMSG_TOKEN}`,
+            path: `/${ULTRAMSG_INSTANCE}/messages/chat`,
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
