@@ -288,7 +288,7 @@ const server = http.createServer((req, res) => {
                     const sucessoCliente = resultadoCliente && resultadoCliente.success;
                     
                     // Resultado final - SEMPRE mostrar sucesso se T.I. recebeu
-                    let mensagemFinal = '';
+                    let mensagemFinal = '✅ Chamado processado!'; // Default seguro
                     
                     if (sucessoTI) {
                         if (sucessoCliente) {
@@ -300,14 +300,19 @@ const server = http.createServer((req, res) => {
                         mensagemFinal = '❌ Falha no envio para T.I. - Tente novamente';
                     }
                     
+                    // GARANTIR que mensagemFinal nunca seja undefined/null/vazio
+                    if (!mensagemFinal || mensagemFinal === 'undefined' || mensagemFinal === 'null') {
+                        mensagemFinal = '✅ Chamado processado com sucesso!';
+                    }
+                    
                     console.log(`✅ Status final: ${mensagemFinal}`);
                     
                     res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
                     res.end(JSON.stringify({
                         success: true, // SEMPRE true se chegou até aqui
-                        message: mensagemFinal,
-                        tiSent: sucessoTI,
-                        clientSent: sucessoCliente,
+                        message: String(mensagemFinal), // Forçar string
+                        tiSent: Boolean(sucessoTI),
+                        clientSent: Boolean(sucessoCliente),
                         timestamp: new Date().toLocaleString('pt-BR')
                     }));
                     
