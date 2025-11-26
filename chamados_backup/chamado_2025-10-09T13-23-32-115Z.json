@@ -1,0 +1,17 @@
+{
+  "nome": "gffgfgfgfg",
+  "setor": "gggggggg",
+  "ramal": "ggggggggggg",
+  "tipo": "📦 Instalação de Software",
+  "titulo": "gggggggg",
+  "prioridade": "🔴 Alta",
+  "descricao": "ggggggggggg",
+  "timestamp": "2025-10-09T13:23:32.115Z",
+  "timestampBR": "09/10/2025, 10:23:32",
+  "numeroDestino": "5511993225739",
+  "metodoEnvio": "ULTRAMSG_API",
+  "credenciais": {
+    "instance": "instance145584",
+    "token": "ynquqp53..."
+  }
+}

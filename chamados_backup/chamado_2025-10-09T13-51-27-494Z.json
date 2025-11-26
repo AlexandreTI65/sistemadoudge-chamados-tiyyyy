@@ -1,0 +1,16 @@
+{
+  "nome": "ISABELLA",
+  "setor": "PÓS VENDAS",
+  "ramal": "....",
+  "celular": "11 963248515",
+  "tipo": "🔧 Manutenção",
+  "titulo": "TESTE",
+  "prioridade": "🟢 Baixa",
+  "descricao": "TESTE",
+  "timestamp": "2025-10-09T13:51:27.494Z",
+  "timestampBR": "09/10/2025, 10:51:27",
+  "numeroTI": "5511993225739",
+  "celularLimpo": "5511963248515",
+  "protocolo": "887495",
+  "metodoEnvio": "ULTRAMSG_API_DUPLO_DEBUG"
+}

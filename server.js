@@ -11,9 +11,14 @@ require('dotenv').config();
 const PORT = process.env.PORT || 3000;
 
 // Configurações da UltraMsg - FORÇAR TOKEN CORRETO
-const ULTRAMSG_TOKEN = 'ynquqp53ffqmu94zggg'; // HARDCODED PARA FORÇAR ATUALIZAÇÃO
-const ULTRAMSG_INSTANCE = 'instance145584';
-const WHATSAPP_TI = '5511993225739';
+const ULTRAMSG_TOKEN = 'dzwv42tc068ccz1y'; // ATUALIZADO
+const ULTRAMSG_INSTANCE = 'instance152530';
+const WHATSAPP_TI = '5511943456846';
+
+const WA_PROVIDER = process.env.WA_PROVIDER || 'ultramsg'; // ultramsg | meta | dev
+const META_WA_TOKEN = process.env.META_WA_TOKEN || '';
+const META_WA_PHONE_ID = process.env.META_WA_PHONE_ID || '';
+const TEST_ENDPOINT_KEY = process.env.TEST_ENDPOINT_KEY || '';
 
 // Função para obter IPs da rede local
 function obterIPsRede() {
@@ -57,8 +62,8 @@ function limparNumero(numero) {
     return limpo;
 }
 
-// Função para enviar mensagem via UltraMsg API
-function enviarMensagemWhatsApp(numeroDestino, mensagem, tipoMensagem = 'mensagem') {
+// função específica para UltraMsg (mantida)
+function enviarUltraMsg(numeroDestino, mensagem, tipoMensagem = 'mensagem') {
     return new Promise((resolve, reject) => {
         console.log(`🔑 DEBUG: Token = ${ULTRAMSG_TOKEN}`);
         console.log(`🏢 DEBUG: Instance = ${ULTRAMSG_INSTANCE}`);
@@ -147,6 +152,106 @@ function enviarMensagemWhatsApp(numeroDestino, mensagem, tipoMensagem = 'mensage
         req.write(postData);
         req.end();
     });
+}
+
+// Nova função: envio via WhatsApp Cloud API (Meta)
+function enviarMetaWhatsApp(numeroDestino, mensagem, tipoMensagem = 'mensagem') {
+    return new Promise((resolve) => {
+        if (!META_WA_TOKEN || !META_WA_PHONE_ID) {
+            console.warn('⚠️ enviarMetaWhatsApp: credenciais Meta ausentes');
+            return resolve({
+                success: false,
+                message: 'Meta WA não configurado (META_WA_TOKEN ou META_WA_PHONE_ID ausente)'
+            });
+        }
+
+        const postData = JSON.stringify({
+            messaging_product: 'whatsapp',
+            to: numeroDestino,
+            type: 'text',
+            text: { body: mensagem }
+        });
+
+        const options = {
+            hostname: 'graph.facebook.com',
+            port: 443,
+            path: `/v17.0/${META_WA_PHONE_ID}/messages`,
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Content-Length': Buffer.byteLength(postData),
+                'Authorization': `Bearer ${META_WA_TOKEN}`
+            }
+        };
+
+        console.log(`📡 Meta WA -> Enviando ${tipoMensagem} para ${numeroDestino} (phone_id=${META_WA_PHONE_ID})`);
+
+        const req = https.request(options, (res) => {
+            let data = '';
+            res.on('data', chunk => data += chunk);
+            res.on('end', () => {
+                const statusCode = res.statusCode;
+                console.log(`📶 Meta WA response status: ${statusCode}`);
+
+                // Tentar parsear JSON, mas manter body caso falhe
+                let parsed;
+                try {
+                    parsed = JSON.parse(data);
+                } catch (err) {
+                    console.warn('⚠️ enviarMetaWhatsApp: não foi possível parsear JSON da resposta da Meta', err.message);
+                }
+
+                if (statusCode >= 200 && statusCode < 300) {
+                    if (parsed && parsed.messages && parsed.messages[0] && parsed.messages[0].id) {
+                        console.log(`✅ Meta WA: mensagem enviada, id=${parsed.messages[0].id}`);
+                        return resolve({ success: true, message: `${tipoMensagem} enviado via Meta`, response: parsed });
+                    }
+
+                    // Alguns responses podem devolver different shape; considerar sucesso se 2xx
+                    console.log('✅ Meta WA: resposta 2xx, retornando sucesso (verifique conteúdo se necessário)');
+                    return resolve({ success: true, message: `${tipoMensagem} processado (Meta)`, statusCode, response: parsed || data });
+                }
+
+                // Erro (4xx/5xx)
+                console.error('❌ Meta WA erro:', statusCode, parsed && parsed.error ? parsed.error : data);
+                if (parsed && parsed.error) {
+                    return resolve({ success: false, message: parsed.error.message || 'Erro Meta', statusCode, response: parsed });
+                }
+
+                return resolve({ success: false, message: `Erro na chamada Meta (status ${statusCode})`, statusCode, response: data });
+            });
+        });
+
+        req.on('error', (err) => {
+            console.error('❌ enviarMetaWhatsApp - erro de request:', err.message);
+            return resolve({ success: false, message: `Erro de conexão: ${err.message}`, error: err.message });
+        });
+
+        // Timeout de 15s
+        req.setTimeout(15000, () => {
+            console.error('⏱️ enviarMetaWhatsApp: timeout de 15s atingido');
+            req.abort();
+            return resolve({ success: false, message: 'Timeout na requisição para Meta WA' });
+        });
+
+        req.write(postData);
+        req.end();
+    });
+}
+
+// Wrapper que escolhe provider
+function enviarMensagemWhatsApp(numeroDestino, mensagem, tipoMensagem = 'mensagem', provider) {
+	provider = provider || WA_PROVIDER;
+
+	if (provider === 'meta') {
+		return enviarMetaWhatsApp(numeroDestino, mensagem, tipoMensagem);
+	} else if (provider === 'dev') {
+		console.log(`[DEV WA] Para: ${numeroDestino} | Mensagem: ${mensagem}`);
+		return Promise.resolve({ success: true, message: 'Dev provider - log ok' });
+	} else {
+		// padrão ultramsg
+		return enviarUltraMsg(numeroDestino, mensagem, tipoMensagem);
+	}
 }
 
 // Função para enviar chamado para T.I.
@@ -293,8 +398,8 @@ const server = http.createServer((req, res) => {
                     const sucessoCliente = resultadoCliente && resultadoCliente.success;
                     
                     // Resultado final - SEMPRE mostrar sucesso se T.I. recebeu
-                    let mensagemFinal = '✅ Chamado processado!'; // Default seguro
-                    
+                    let mensagemFinal = '✅ Chamado processado!';
+                    let erroTI = resultadoTI && resultadoTI.message ? resultadoTI.message : '';
                     if (sucessoTI) {
                         if (sucessoCliente) {
                             mensagemFinal = '🎉 Chamado enviado para T.I. e confirmação enviada!';
@@ -302,25 +407,21 @@ const server = http.createServer((req, res) => {
                             mensagemFinal = '✅ Chamado enviado para T.I. com sucesso!';
                         }
                     } else {
-                        mensagemFinal = '❌ Falha no envio para T.I. - Tente novamente';
+                        mensagemFinal = `❌ Falha no envio para T.I. - Tente novamente\n${erroTI}`;
                     }
-                    
-                    // GARANTIR que mensagemFinal nunca seja undefined/null/vazio
                     if (!mensagemFinal || mensagemFinal === 'undefined' || mensagemFinal === 'null') {
                         mensagemFinal = '✅ Chamado processado com sucesso!';
                     }
-                    
                     console.log(`✅ Status final: ${mensagemFinal}`);
-                    
                     res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
                     res.end(JSON.stringify({
-                        success: true, // SEMPRE true se chegou até aqui
-                        message: String(mensagemFinal), // Forçar string
+                        success: true,
+                        message: String(mensagemFinal),
                         tiSent: Boolean(sucessoTI),
                         clientSent: Boolean(sucessoCliente),
-                        timestamp: new Date().toLocaleString('pt-BR')
+                        timestamp: new Date().toLocaleString('pt-BR'),
+                        tiError: !sucessoTI ? resultadoTI : undefined
                     }));
-                    
                     console.log(`✅ ${mensagemFinal}`);
                     
                 } catch (error) {
@@ -347,6 +448,90 @@ const server = http.createServer((req, res) => {
             }
         });
     } 
+    // Novo endpoint para enviar mensagens via nossa API (qualquer provider via parâmetro)
+    else if (pathname === '/api/send-whatsapp' && req.method === 'POST') {
+        let body = '';
+        req.on('data', chunk => { body += chunk.toString(); });
+
+        req.on('end', async () => {
+            try {
+                const payload = JSON.parse(body);
+                const numero = payload.to || payload.numero || payload.phone;
+                const msg = payload.body || payload.mensagem;
+                const provider = payload.provider; // opcional: 'ultramsg' | 'meta' | 'dev'
+
+                if (!numero || !msg) {
+                    res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
+                    res.end(JSON.stringify({ success: false, message: 'Campos "to" e "body" obrigatórios' }));
+                    return;
+                }
+
+                const numeroLimpo = limparNumero(numero);
+                const resultado = await enviarMensagemWhatsApp(numeroLimpo, msg, 'API', provider);
+
+                res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+                res.end(JSON.stringify(resultado));
+            } catch (err) {
+                res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8' });
+                res.end(JSON.stringify({ success: false, message: 'Erro ao processar requisição', error: String(err) }));
+            }
+        });
+    } 
+    
+    // Endpoint de teste rápido para enviar mensagem via Meta (WhatsApp Business)
+    else if (pathname === '/test-meta-send' && req.method === 'GET') {
+        (async () => {
+            try {
+                const queryTo = parsedUrl.query.to || parsedUrl.query.phone || parsedUrl.query.numero;
+                const providedKey = parsedUrl.query.key || parsedUrl.query.k || '';
+
+                // Forçar que TEST_ENDPOINT_KEY esteja configurada no servidor
+                if (!TEST_ENDPOINT_KEY) {
+                    console.error('🚫 /test-meta-send bloqueado: TEST_ENDPOINT_KEY não configurado');
+                    res.writeHead(503, { 'Content-Type': 'application/json; charset=utf-8' });
+                    res.end(JSON.stringify({ success: false, message: 'TEST_ENDPOINT_KEY não configurado no servidor. Configure a variável de ambiente antes de usar este endpoint.' }));
+                    return;
+                }
+
+                // Validar chave fornecida
+                if (!providedKey || providedKey !== TEST_ENDPOINT_KEY) {
+                    console.warn('🚫 /test-meta-send acesso negado: chave inválida ou ausente');
+                    res.writeHead(401, { 'Content-Type': 'application/json; charset=utf-8' });
+                    res.end(JSON.stringify({ success: false, message: 'Chave inválida ou ausente' }));
+                    return;
+                }
+                const alvo = queryTo || WHATSAPP_TI;
+                const numeroLimpo = limparNumero(alvo);
+                const mensagem = '🔧 Mensagem de teste: WhatsApp Business API (Meta) — teste automático.';
+
+                console.log(`🧪 /test-meta-send -> Enviando teste para ${alvo} (limpo: ${numeroLimpo})`);
+
+                const resultado = await enviarMensagemWhatsApp(numeroLimpo, mensagem, 'Teste Meta', 'meta');
+
+                res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+                res.end(JSON.stringify({
+                    success: Boolean(resultado && resultado.success),
+                    requestedTo: String(alvo),
+                    numeroLimpo,
+                    result: resultado
+                }));
+            } catch (err) {
+                console.error('❌ Erro /test-meta-send:', err);
+                res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8' });
+                res.end(JSON.stringify({ success: false, error: String(err) }));
+            }
+        })();
+    }
+
+    // Endpoint para verificar provider configurado
+    else if (pathname === '/api/config' && req.method === 'GET') {
+        res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({
+            providerConfigured: WA_PROVIDER,
+            ultramsgConfigured: !!ULTRAMSG_TOKEN,
+            metaConfigured: !!META_WA_TOKEN && !!META_WA_PHONE_ID
+        }));
+    }
     // 404
     else {
         res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
@@ -356,50 +541,18 @@ const server = http.createServer((req, res) => {
 
 // Iniciar servidor escutando em TODAS as interfaces (0.0.0.0)
 server.listen(PORT, '0.0.0.0', () => {
+    console.log(`✅ Servidor ouvindo em http://0.0.0.0:${PORT}`);
     const ips = obterIPsRede();
-    
-    console.log('\n🏢 SISTEMA DE CHAMADOS T.I. - PYRAMID DIAMANTADOS');
-    console.log('🌐 ACESSO MULTI-USUÁRIO - REDE LOCAL');
-    console.log('='  .repeat(80));
-    console.log(`🖥️  Servidor: ${os.hostname()}`);
-    console.log(`🔌 Porta: ${PORT}`);
-    console.log(`🌐 Acesso Local: http://localhost:${PORT}`);
-    
-    if (ips.length > 0) {
-        console.log('🌍 OUTROS COMPUTADORES PODEM ACESSAR:');
-        ips.forEach(ip => {
-            console.log(`   📍 http://${ip}:${PORT}`);
-        });
-        console.log('\n📱 TAMBÉM FUNCIONA NO CELULAR!');
-        ips.forEach(ip => {
-            console.log(`   📱 http://${ip}:${PORT}`);
-        });
-    }
-    
-    console.log(`\n📱 WhatsApp T.I.: +55${WHATSAPP_TI}`);
-    console.log(`🏢 Instance: ${ULTRAMSG_INSTANCE}`);
-    console.log(`🔑 Token: ${ULTRAMSG_TOKEN.substring(0, 8)}...`);
-    console.log('='  .repeat(80));
-    console.log('✅ SERVIDOR MULTI-ACESSO FUNCIONANDO!');
-    console.log('👥 Qualquer pessoa na rede pode acessar!');
-    console.log('🔥 Sistema 24/7 enquanto este PC estiver ligado!');
-    console.log('\n🎯 PARA DIVULGAR NA EMPRESA:');
-    if (ips.length > 0) {
-        console.log(`📋 Sistema de Chamados: http://${ips[0]}:${PORT}`);
-        console.log('💻 Funciona em computador e celular!');
-    }
-    console.log('\n🎯 Aguardando chamados...\n');
-});
-
-// Tratamento de erros
-server.on('error', (err) => {
-    if (err.code === 'EADDRINUSE') {
-        console.error(`❌ Porta ${PORT} já está em uso. Execute:`);
-        console.error('   taskkill /F /IM node.exe');
-        console.error('   E tente novamente');
-    } else {
-        console.error('❌ Erro no servidor:', err);
+    if (ips && ips.length) {
+        console.log('🔗 Endereços de acesso na rede local:');
+        ips.forEach(ip => console.log(`   http://${ip}:${PORT}`));
     }
 });
 
-console.log('🔄 Iniciando servidor multi-acesso...');
+process.on('uncaughtException', (err) => {
+    console.error('❌ Exceção não tratada:', err && err.stack ? err.stack : err);
+});
+
+process.on('unhandledRejection', (reason) => {
+    console.error('❌ Rejeição não tratada:', reason);
+});

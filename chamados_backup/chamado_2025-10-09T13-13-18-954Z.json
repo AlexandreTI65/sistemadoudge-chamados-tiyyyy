@@ -1,0 +1,17 @@
+{
+  "nome": "Alexandre Douglas",
+  "setor": "Ti",
+  "ramal": "11993225739",
+  "tipo": "💻 Suporte Técnico",
+  "titulo": "TEste",
+  "prioridade": "🔴 Alta",
+  "descricao": "Teste",
+  "timestamp": "2025-10-09T13:13:18.954Z",
+  "timestampBR": "09/10/2025, 10:13:18",
+  "numeroDestino": "+5511993225739",
+  "metodoEnvio": "ULTRAMSG_API",
+  "credenciais": {
+    "instance": "instance145584",
+    "token": "ynquqp53..."
+  }
+}
