@@ -18,7 +18,8 @@
   "author": "Pyramid Diamantados T.I.",
   "license": "MIT",
   "dependencies": {
-    "dotenv": "^16.0.3"
+    "dotenv": "^16.0.3",
+    "firebase-admin": "^13.6.0"
   },
   "engines": {
     "node": ">=14.0.0"
