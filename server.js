@@ -10,10 +10,10 @@ require('dotenv').config();
 // Configuração da porta
 const PORT = process.env.PORT || 3000;
 
-// Configurações da UltraMsg - FORÇAR TOKEN CORRETO
-const ULTRAMSG_TOKEN = 'dzwv42tc068ccz1y'; // ATUALIZADO
-const ULTRAMSG_INSTANCE = 'instance152530';
-const WHATSAPP_TI = '5511943456846';
+// Configurações da UltraMsg - agora lidas do .env
+const ULTRAMSG_TOKEN = process.env.ULTRAMSG_TOKEN;
+const ULTRAMSG_INSTANCE = process.env.ULTRAMSG_INSTANCE;
+const WHATSAPP_TI = process.env.WHATSAPP_TI;
 
 const WA_PROVIDER = process.env.WA_PROVIDER || 'ultramsg'; // ultramsg | meta | dev
 const META_WA_TOKEN = process.env.META_WA_TOKEN || '';
@@ -62,13 +62,13 @@ function limparNumero(numero) {
     return limpo;
 }
 
-// função específica para UltraMsg (mantida)
+// função específica para UltraMsg (único número principal)
 function enviarUltraMsg(numeroDestino, mensagem, tipoMensagem = 'mensagem') {
     return new Promise((resolve, reject) => {
         console.log(`🔑 DEBUG: Token = ${ULTRAMSG_TOKEN}`);
         console.log(`🏢 DEBUG: Instance = ${ULTRAMSG_INSTANCE}`);
         console.log(`📱 DEBUG: Numero = ${numeroDestino}`);
-        
+
         const postData = querystring.stringify({
             to: numeroDestino,
             body: mensagem,
@@ -87,20 +87,20 @@ function enviarUltraMsg(numeroDestino, mensagem, tipoMensagem = 'mensagem') {
         };
 
         console.log(`📡 Enviando ${tipoMensagem} para: ${numeroDestino}`);
-        
+
         const req = https.request(options, (res) => {
             let data = '';
-            
+
             res.on('data', (chunk) => {
                 data += chunk;
             });
-            
+
             res.on('end', () => {
                 console.log(`📱 ${tipoMensagem} - Status: ${res.statusCode}`);
-                
+
                 try {
                     const resposta = JSON.parse(data);
-                    
+
                     if (resposta.sent === true || resposta.sent === 'true' || resposta.id) {
                         console.log(`✅ ${tipoMensagem.toUpperCase()} ENVIADO!`);
                         resolve({
@@ -241,22 +241,44 @@ function enviarMetaWhatsApp(numeroDestino, mensagem, tipoMensagem = 'mensagem') 
 
 // Wrapper que escolhe provider
 function enviarMensagemWhatsApp(numeroDestino, mensagem, tipoMensagem = 'mensagem', provider) {
-	provider = provider || WA_PROVIDER;
+    provider = provider || WA_PROVIDER;
 
-	if (provider === 'meta') {
-		return enviarMetaWhatsApp(numeroDestino, mensagem, tipoMensagem);
-	} else if (provider === 'dev') {
-		console.log(`[DEV WA] Para: ${numeroDestino} | Mensagem: ${mensagem}`);
-		return Promise.resolve({ success: true, message: 'Dev provider - log ok' });
-	} else {
-		// padrão ultramsg
-		return enviarUltraMsg(numeroDestino, mensagem, tipoMensagem);
-	}
+    if (provider === 'meta') {
+        return enviarMetaWhatsApp(numeroDestino, mensagem, tipoMensagem);
+    } else if (provider === 'dev') {
+        console.log(`[DEV WA] Para: ${numeroDestino} | Mensagem: ${mensagem}`);
+        return Promise.resolve({ success: true, message: 'Dev provider - log ok' });
+    } else {
+        // padrão ultramsg único
+        return enviarUltraMsg(numeroDestino, mensagem, tipoMensagem);
+    }
 }
 
-// Função para enviar chamado para T.I.
+// Firebase: registro de chamados
+const { salvarChamadoFirebase } = require('./firebase/registroChamado');
+
+// Função para obter número do setor
+function getNumeroSetor(setor) {
+    const map = {
+        'T.I': process.env.WHATSAPP_TI || '5511943456846',
+        'FISCAL': process.env.WHATSAPP_FISCAL || '5511999999991',
+        'FINANCEIRO': process.env.WHATSAPP_FINANCEIRO || '5511999999992',
+        'COMERCIAL': process.env.WHATSAPP_COMERCIAL || '5511999999993',
+        'LOGISTICA': process.env.WHATSAPP_LOGISTICA || '5511999999994',
+        'COMPRAS': process.env.WHATSAPP_COMPRAS || '5511999999995'
+    };
+    // Aceita também opções com emoji
+    for (const key in map) {
+        if (setor && setor.toUpperCase().includes(key)) return map[key];
+    }
+    return process.env.WHATSAPP_TI || '5511943456846';
+}
+
+// Função para enviar chamado para o setor correto e registrar no Firebase
 async function enviarChamadoTI(dados) {
-    const mensagem = `🎫 *NOVO CHAMADO DE T.I.*
+    const numeroDestino = getNumeroSetor(dados.setor);
+    const setor = (dados.setor || '').toUpperCase();
+    const mensagem = `🎫 *NOVO CHAMADO*
 
 👤 *SOLICITANTE:*
 • Nome: ${dados.nome}
@@ -265,7 +287,6 @@ async function enviarChamadoTI(dados) {
 • Celular: ${dados.celular || 'Não informado'}
 
 🛠️ *CHAMADO:*
-• Tipo: ${dados.tipo}
 • Título: ${dados.titulo}
 • Prioridade: ${dados.prioridade}
 
@@ -276,7 +297,15 @@ ${dados.descricao}
 
 _Sistema Rede Local - Pyramid Diamantados_`;
 
-    return await enviarMensagemWhatsApp(WHATSAPP_TI, mensagem, 'Chamado T.I.');
+    // Salvar chamado no Firebase
+    try {
+        await salvarChamadoFirebase(dados);
+        console.log('✅ Chamado registrado no Firebase!');
+    } catch (err) {
+        console.error('❌ Erro ao registrar chamado no Firebase:', err);
+    }
+
+    return await enviarMensagemWhatsApp(numeroDestino, mensagem, 'Chamado Setor', undefined, setor);
 }
 
 // Função para enviar confirmação para solicitante
