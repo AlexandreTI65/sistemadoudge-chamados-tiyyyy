@@ -130,10 +130,7 @@
           <label for="nome">👤 Nome</label>
           <input id="nome" type="text" name="Nome" placeholder="Seu nome completo" required />
         </div>
-        <div class="field">
-          <label for="setor">🏢 Setor</label>
-          <input id="setor" type="text" name="Setor" placeholder="Ex: Vendas, Produção" required />
-        </div>
+        <!-- Campo de setor removido, pois já existe o select abaixo -->
       </div>
 
       <div class="row">
@@ -149,14 +146,15 @@
 
       <div class="row">
         <div class="field">
-          <label for="tipo">🛠️ Tipo de chamado</label>
-          <select id="tipo" name="Tipo de chamado" required>
+          <label for="tipo">🏢 Setor</label>
+          <select id="tipo" name="Setor" required>
             <option value="" hidden selected>Escolha uma opção</option>
-            <option>💻 Suporte Técnico</option>
-            <option>🔧 Manutenção</option>
-            <option>📦 Instalação de Software</option>
-            <option>❓ Dúvida</option>
-            <option>📁 Outro</option>
+            <option>🖥️ T.I</option>
+            <option>🧾 FISCAL</option>
+            <option>💰 FINANCEIRO</option>
+            <option>💼 COMERCIAL</option>
+            <option>🚚 LOGISTICA</option>
+            <option>🛒 COMPRAS</option>
           </select>
         </div>
       </div>
@@ -197,10 +195,10 @@
 
       const dados = {
         nome: form.Nome.value,
-        setor: form.Setor.value,
+        setor: form.tipo.value,
         ramal: form.Ramal.value,
         celular: form.Celular.value,
-        tipo: form['Tipo de chamado'].value,
+        tipo: form.tipo.value,
         titulo: form.Título.value,
         prioridade: form.Prioridade.value,
         descricao: form.Descrição.value,
