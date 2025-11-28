@@ -267,7 +267,8 @@ function getNumeroSetor(setor) {
         // Se for FISCAL, envia para o grupo
         'FISCAL': process.env.WHATSAPP_GRUPO_FISCAL || process.env.WHATSAPP_FISCAL || '5511937575367',
         'FINANCEIRO': process.env.WHATSAPP_FINANCEIRO || '5511994797594',
-        'COMERCIAL': process.env.WHATSAPP_COMERCIAL || '5511988272404',
+        // Se for COMERCIAL, envia para o grupo se existir
+        'COMERCIAL': process.env.WHATSAPP_GRUPO_COMERCIAL || process.env.WHATSAPP_COMERCIAL || '5511988272404',
         'LOGISTICA': process.env.WHATSAPP_LOGISTICA || '5511988272607',
         'COMPRAS': process.env.WHATSAPP_COMPRAS || '5511988272541'
     };
