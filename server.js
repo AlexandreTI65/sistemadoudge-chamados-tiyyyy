@@ -71,6 +71,10 @@ function enviarUltraMsg(numeroDestino, mensagem, tipoMensagem = 'mensagem') {
         console.log(`🏢 DEBUG: Instance = ${ULTRAMSG_INSTANCE}`);
         console.log(`📱 DEBUG: Numero = ${numeroDestino}`);
 
+        // Detecta se é grupo (termina com @g.us)
+        const isGroup = typeof numeroDestino === 'string' && numeroDestino.endsWith('@g.us');
+        const endpoint = isGroup ? 'group' : 'chat';
+
         const postData = querystring.stringify({
             to: numeroDestino,
             body: mensagem,
@@ -80,7 +84,7 @@ function enviarUltraMsg(numeroDestino, mensagem, tipoMensagem = 'mensagem') {
         const options = {
             hostname: 'api.ultramsg.com',
             port: 443,
-            path: `/${ULTRAMSG_INSTANCE}/messages/chat`,
+            path: `/${ULTRAMSG_INSTANCE}/messages/${endpoint}`,
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
@@ -88,7 +92,7 @@ function enviarUltraMsg(numeroDestino, mensagem, tipoMensagem = 'mensagem') {
             }
         };
 
-        console.log(`📡 Enviando ${tipoMensagem} para: ${numeroDestino}`);
+        console.log(`📡 Enviando ${tipoMensagem} para: ${numeroDestino} (endpoint: ${endpoint})`);
 
         const req = https.request(options, (res) => {
             let data = '';
@@ -263,13 +267,13 @@ const { salvarChamadoFirebase } = require('./firebase/registroChamado');
 function getNumeroSetor(setor) {
     const map = {
         'T.I': process.env.WHATSAPP_TI || '5511943456846',
-        'FISCAL': process.env.WHATSAPP_FISCAL || '5511999999991',
-        'FINANCEIRO': process.env.WHATSAPP_FINANCEIRO || '5511999999992',
-        'COMERCIAL': process.env.WHATSAPP_COMERCIAL || '5511999999993',
-        'LOGISTICA': process.env.WHATSAPP_LOGISTICA || '5511999999994',
-        'COMPRAS': process.env.WHATSAPP_COMPRAS || '5511999999995'
+        // Se for FISCAL, envia para o grupo
+        'FISCAL': process.env.WHATSAPP_GRUPO_FISCAL || process.env.WHATSAPP_FISCAL || '5511937575367',
+        'FINANCEIRO': process.env.WHATSAPP_FINANCEIRO || '5511994797594',
+        'COMERCIAL': process.env.WHATSAPP_COMERCIAL || '5511988272404',
+        'LOGISTICA': process.env.WHATSAPP_LOGISTICA || '5511988272607',
+        'COMPRAS': process.env.WHATSAPP_COMPRAS || '5511988272541'
     };
-    // Aceita também opções com emoji
     for (const key in map) {
         if (setor && setor.toUpperCase().includes(key)) return map[key];
     }
