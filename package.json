@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server-debug.js",
-    "test": "node server.js"
+    "test": "node server.js",
+    "postinstall": "cp /etc/secrets/.env .env || copy /etc/secrets/.env .env"
   },
   "keywords": [
     "nodejs",
