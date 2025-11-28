@@ -5,7 +5,9 @@ const path = require('path');
 const url = require('url');
 const querystring = require('querystring');
 const os = require('os');
+
 require('dotenv').config();
+console.log('DEBUG ENV:', process.env.ULTRAMSG_TOKEN, process.env.ULTRAMSG_INSTANCE);
 
 // Configuração da porta
 const PORT = process.env.PORT || 3000;
