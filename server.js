@@ -71,10 +71,7 @@ function enviarUltraMsg(numeroDestino, mensagem, tipoMensagem = 'mensagem') {
         console.log(`🏢 DEBUG: Instance = ${ULTRAMSG_INSTANCE}`);
         console.log(`📱 DEBUG: Numero = ${numeroDestino}`);
 
-        // Detecta se é grupo (termina com @g.us)
-        const isGroup = typeof numeroDestino === 'string' && numeroDestino.endsWith('@g.us');
-        const endpoint = isGroup ? 'group' : 'chat';
-
+        // UltraMsg: sempre usar /messages/chat, mesmo para grupos
         const postData = querystring.stringify({
             to: numeroDestino,
             body: mensagem,
@@ -84,7 +81,7 @@ function enviarUltraMsg(numeroDestino, mensagem, tipoMensagem = 'mensagem') {
         const options = {
             hostname: 'api.ultramsg.com',
             port: 443,
-            path: `/${ULTRAMSG_INSTANCE}/messages/${endpoint}`,
+            path: `/${ULTRAMSG_INSTANCE}/messages/chat`,
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
@@ -92,7 +89,7 @@ function enviarUltraMsg(numeroDestino, mensagem, tipoMensagem = 'mensagem') {
             }
         };
 
-        console.log(`📡 Enviando ${tipoMensagem} para: ${numeroDestino} (endpoint: ${endpoint})`);
+        console.log(`📡 Enviando ${tipoMensagem} para: ${numeroDestino} (endpoint: chat)`);
 
         const req = https.request(options, (res) => {
             let data = '';
