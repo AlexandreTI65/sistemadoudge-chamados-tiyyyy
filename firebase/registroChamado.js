@@ -2,8 +2,10 @@
 const admin = require('firebase-admin');
 const fs = require('fs');
 
+
 // Carregar credenciais do Firebase (serviceAccountKey.json)
-const serviceAccount = require('/etc/secrets/serviceAccountKey.json');
+const path = require('path');
+const serviceAccount = require(path.join(__dirname, 'serviceAccountKey.json'));
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -23,7 +25,8 @@ async function salvarChamadoFirebase(dados) {
     dia: agora.getDate(),
     hora: agora.getHours(),
     minuto: agora.getMinutes(),
-    segundo: agora.getSeconds()
+    segundo: agora.getSeconds(),
+    anexoUrl: dados.anexoUrl || null
   };
   const ref = db.collection('chamados')
     .doc(`${registro.ano}`)

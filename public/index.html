@@ -175,9 +175,15 @@
         </div>
       </div>
 
+
       <div class="field">
         <label for="descricao">🗒️ Descrição</label>
         <textarea id="descricao" name="Descrição" placeholder="Descreva o problema com o máximo de detalhes..." required></textarea>
+      </div>
+
+      <div class="field">
+        <label for="anexo">📎 Anexo (imagem ou documento)</label>
+        <input id="anexo" type="file" name="anexo" accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt" />
       </div>
 
       <button type="submit">📨 Enviar Chamado</button>
@@ -193,27 +199,16 @@
     form.addEventListener('submit', async function (e) {
       e.preventDefault();
 
-      const dados = {
-        nome: form.Nome.value,
-        setor: form.tipo.value,
-        ramal: form.Ramal.value,
-        celular: form.Celular.value,
-        tipo: form.tipo.value,
-        titulo: form.Título.value,
-        prioridade: form.Prioridade.value,
-        descricao: form.Descrição.value,
-      };
+      const formData = new FormData(form);
 
       try {
         const resposta = await fetch('/enviar-chamado', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(dados),
+          body: formData
         });
 
         if (resposta.ok) {
           const resultado = await resposta.json();
-          
           // Mostrar mensagem de sucesso
           alerta.style.display = 'block';
           alerta.innerHTML = `
@@ -225,10 +220,8 @@
               </div>
             </div>
           `;
-          
           // Resetar formulário
           form.reset();
-          
           // Esconder alerta após 6 segundos
           setTimeout(() => {
             alerta.style.display = 'none';

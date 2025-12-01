@@ -19,8 +19,11 @@
   "author": "Pyramid Diamantados T.I.",
   "license": "MIT",
   "dependencies": {
+    "@google-cloud/storage": "^7.17.3",
     "dotenv": "^16.0.3",
-    "firebase-admin": "^13.6.0"
+    "exceljs": "^4.4.0",
+    "firebase-admin": "^13.6.0",
+    "multer": "^2.0.2"
   },
   "engines": {
     "node": ">=14.0.0"

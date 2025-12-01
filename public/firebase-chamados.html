@@ -1,0 +1,61 @@
+<!-- Adicione este bloco ao final do <body> do seu index.html -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+  // Configuração do Firebase Web
+  const firebaseConfig = {
+    apiKey: "AIzaSyDtylqIIZqlPKsOxTolWr13KNS936GamZQ",
+    authDomain: "armazenamento-chamado-ti.firebaseapp.com",
+    projectId: "armazenamento-chamado-ti",
+    storageBucket: "armazenamento-chamado-ti.appspot.com",
+    messagingSenderId: "144454082388",
+    appId: "1:144454082388:web:99bfbd5c5a54e03da332c1"
+  };
+
+  // Inicializa Firebase
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // Função para listar chamados do mês atual
+  async function listarChamadosMesAtual() {
+    const hoje = new Date();
+    const ano = hoje.getFullYear();
+    const mes = hoje.getMonth() + 1;
+    const chamados = [];
+    // Caminho: chamados/ano/mes/dia/registros
+    const diasRef = collection(db, `chamados/${ano}/${mes}`);
+    const diasSnap = await getDocs(diasRef);
+    for (const diaDoc of diasSnap.docs) {
+      const registrosRef = collection(db, `chamados/${ano}/${mes}/${diaDoc.id}/registros`);
+      const registrosSnap = await getDocs(registrosRef);
+      registrosSnap.forEach((doc) => {
+        chamados.push(doc.data());
+      });
+    }
+    return chamados;
+  }
+
+  // Exibir chamados na página
+  async function exibirChamados() {
+    const chamados = await listarChamadosMesAtual();
+    const div = document.getElementById('lista-chamados');
+    div.innerHTML = '';
+    if (chamados.length === 0) {
+      div.innerHTML = '<p>Nenhum chamado registrado neste mês.</p>';
+      return;
+    }
+    chamados.forEach((chamado) => {
+      const el = document.createElement('div');
+      el.className = 'chamado-item';
+      el.innerHTML = `<strong>${chamado.nome}</strong> - ${chamado.titulo} <br> <small>${chamado.registradoEm}</small>`;
+      div.appendChild(el);
+    });
+  }
+
+  // Chama ao carregar a página
+  window.addEventListener('DOMContentLoaded', exibirChamados);
+</script>
+
+<!-- Adicione este bloco onde quiser mostrar os chamados -->
+<div id="lista-chamados" style="margin:2em 0;"></div>
