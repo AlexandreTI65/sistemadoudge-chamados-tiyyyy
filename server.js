@@ -3,17 +3,15 @@ const { relatorioChamadosHandler } = require('./api/relatorio');
 // ...restante das dependências...
 const http = require('http');
 const multer = require('multer');
-const { Storage } = require('@google-cloud/storage');
+// const { Storage } = require('@google-cloud/storage');
 const path = require('path');
 // Configuração do Multer para upload em memória
 const upload = multer({ storage: multer.memoryStorage() });
 
-// Configuração do Firebase Storage
-const storage = new Storage({
-    keyFilename: path.join(__dirname, 'firebase', 'serviceAccountKey.json'),
-});
-const bucketName = process.env.FIREBASE_STORAGE_BUCKET || 'armazenamento-chamado-ti.appspot.com';
-const bucket = storage.bucket(bucketName);
+// Google Drive
+const { uploadFileToDrive } = require('./google-drive-upload');
+
+// Removido Firebase Storage
 const https = require('https');
 const fs = require('fs');
 const url = require('url');
@@ -347,27 +345,22 @@ const server = http.createServer((req, res) => {
             const dados = req.body;
             let anexoUrl = null;
 
-            // Se houver arquivo, fazer upload para Firebase Storage
+            // Se houver arquivo, fazer upload para Google Drive
             if (req.file) {
                 try {
                     const ext = path.extname(req.file.originalname) || '.bin';
-                    const nomeArquivo = `anexos/${Date.now()}_${Math.floor(Math.random()*10000)}${ext}`;
-                    const blob = bucket.file(nomeArquivo);
-                    const blobStream = blob.createWriteStream({ resumable: false, contentType: req.file.mimetype });
-
-                    blobStream.end(req.file.buffer);
-
-                    await new Promise((resolve, reject) => {
-                        blobStream.on('finish', resolve);
-                        blobStream.on('error', reject);
-                    });
-
-                    // Tornar o arquivo público
-                    await blob.makePublic();
-                    anexoUrl = `https://storage.googleapis.com/${bucketName}/${nomeArquivo}`;
+                    const nomeArquivo = `anexo_${Date.now()}_${Math.floor(Math.random()*10000)}${ext}`;
+                    // Upload para Google Drive
+                    const driveResult = await uploadFileToDrive(
+                        Buffer.from(req.file.buffer),
+                        nomeArquivo,
+                        req.file.mimetype,
+                        process.env.GDRIVE_FOLDER_ID // opcional: id da pasta
+                    );
+                    anexoUrl = driveResult.webViewLink || driveResult.webContentLink;
                     dados.anexoUrl = anexoUrl;
                 } catch (uploadErr) {
-                    console.error('❌ Erro ao enviar anexo para Firebase Storage:', uploadErr);
+                    console.error('❌ Erro ao enviar anexo para Google Drive:', uploadErr);
                     // Continua sem anexo
                 }
             }
