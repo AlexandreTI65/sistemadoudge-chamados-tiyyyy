@@ -205,8 +205,7 @@ function enviarMensagemWhatsApp(numeroDestino, mensagem, tipoMensagem = 'mensage
     }
 }
 
-// Firebase: registro de chamados
-const { salvarChamadoFirebase } = require('./firebase/registroChamado');
+
 
 // Função para obter número do setor
 function getNumeroSetor(setor) {
@@ -226,7 +225,7 @@ function getNumeroSetor(setor) {
     return process.env.WHATSAPP_TI || '5511943456846';
 }
 
-// Função para enviar chamado para o setor correto e registrar no Firebase
+// Função para enviar chamado para o setor correto (sem Firebase)
 async function enviarChamadoTI(dados) {
     const numeroDestino = getNumeroSetor(dados.setor);
     const setor = (dados.setor || '').toUpperCase();
@@ -245,14 +244,6 @@ async function enviarChamadoTI(dados) {
         mensagem += '\n📎 *Anexo:* ' + dados.anexoUrl + '\n';
     }
     mensagem += '\n📅 *Data/Hora:* ' + new Date().toLocaleString('pt-BR') + '\n_Sistema Rede Local - Pyramid Diamantados_';
-
-    // Salvar chamado no Firebase
-    try {
-        await salvarChamadoFirebase(dados);
-        console.log('✅ Chamado registrado no Firebase!');
-    } catch (err) {
-        console.error('❌ Erro ao registrar chamado no Firebase:', err);
-    }
 
     return await enviarMensagemWhatsApp(numeroDestino, mensagem, 'Chamado Setor', undefined, setor);
 }
