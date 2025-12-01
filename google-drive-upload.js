@@ -46,7 +46,22 @@ async function uploadFileToDrive(fileBuffer, fileName, mimeType, folderId) {
   const { Readable } = require('stream');
   const media = { mimeType, body: Readable.from(fileBuffer) };
   const res = await drive.files.create({ resource: fileMetadata, media, fields: 'id,webViewLink,webContentLink' });
-  return res.data;
+
+  // Tornar o arquivo público (qualquer pessoa com o link pode visualizar)
+  await drive.permissions.create({
+    fileId: res.data.id,
+    requestBody: {
+      role: 'reader',
+      type: 'anyone',
+    },
+  });
+
+  // Buscar novamente os links públicos
+  const file = await drive.files.get({
+    fileId: res.data.id,
+    fields: 'id,webViewLink,webContentLink'
+  });
+  return file.data;
 }
 
 module.exports = { uploadFileToDrive };
