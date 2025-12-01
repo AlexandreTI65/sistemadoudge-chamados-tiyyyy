@@ -100,8 +100,34 @@ function enviarUltraMsg(numeroDestino, mensagem, tipoMensagem = 'mensagem') {
                 'Content-Length': Buffer.byteLength(postData)
             }
         };
-        // ...restante do código de envio UltraMsg...
-        // (mantido como estava, removendo bloco duplicado/solto)
+
+        const req = https.request(options, (res) => {
+            let data = '';
+            res.on('data', chunk => data += chunk);
+            res.on('end', () => {
+                try {
+                    const parsed = JSON.parse(data);
+                    if (res.statusCode >= 200 && res.statusCode < 300) {
+                        console.log('✅ UltraMsg: mensagem enviada com sucesso!', parsed);
+                        resolve({ success: true, message: 'Mensagem enviada via UltraMsg', response: parsed });
+                    } else {
+                        console.error('❌ UltraMsg erro:', res.statusCode, parsed);
+                        resolve({ success: false, message: parsed.error || 'Erro UltraMsg', statusCode: res.statusCode, response: parsed });
+                    }
+                } catch (err) {
+                    console.error('❌ UltraMsg: erro ao parsear resposta', err, data);
+                    resolve({ success: false, message: 'Erro ao parsear resposta UltraMsg', error: err, response: data });
+                }
+            });
+        });
+
+        req.on('error', (err) => {
+            console.error('❌ UltraMsg - erro de request:', err.message);
+            resolve({ success: false, message: `Erro de conexão: ${err.message}`, error: err.message });
+        });
+
+        req.write(postData);
+        req.end();
     });
 }
 
