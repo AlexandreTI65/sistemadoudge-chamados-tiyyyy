@@ -18,7 +18,23 @@ async function authenticate() {
   } else {
     const authUrl = oAuth2Client.generateAuthUrl({ access_type: 'offline', scope: ['https://www.googleapis.com/auth/drive.file'] });
     console.log('Authorize this app by visiting this url:', authUrl);
-    throw new Error('Token de autenticação do Google Drive não encontrado. Siga o link acima para gerar.');
+    // Prompt interativo para colar o código
+    const readline = require('readline');
+    const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+    return new Promise((resolve, reject) => {
+      rl.question('Cole o código de autorização aqui: ', async (code) => {
+        rl.close();
+        try {
+          const { tokens } = await oAuth2Client.getToken(code.trim());
+          oAuth2Client.setCredentials(tokens);
+          fs.writeFileSync(TOKEN_PATH, JSON.stringify(tokens));
+          console.log('Token salvo com sucesso em', TOKEN_PATH);
+          resolve(oAuth2Client);
+        } catch (err) {
+          reject(err);
+        }
+      });
+    });
   }
 }
 
@@ -33,3 +49,15 @@ async function uploadFileToDrive(fileBuffer, fileName, mimeType, folderId) {
 }
 
 module.exports = { uploadFileToDrive };
+
+// Permitir geração de token ao rodar diretamente
+if (require.main === module) {
+  (async () => {
+    try {
+      await authenticate();
+      console.log('Token de autenticação do Google Drive gerado e salvo com sucesso!');
+    } catch (err) {
+      console.error('Erro ao autenticar com o Google Drive:', err.message);
+    }
+  })();
+}

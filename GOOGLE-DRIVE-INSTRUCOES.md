@@ -1,6 +1,6 @@
 # Como configurar o upload de anexos para o Google Drive
 
-1. Vá em https://console.cloud.google.com/apis/credentials e crie um novo projeto (ou use um existente).
+1. Vá em tts://console.cloud.google.com/apis/credentialsp he crie um novo projeto (ou use um existente).
 2. Ative a API do Google Drive para o projeto.
 3. Crie uma credencial do tipo "OAuth 2.0 Client ID" (aplicativo de área de trabalho).
 4. Baixe o arquivo `credentials.json` e coloque na raiz do projeto como `google-drive-credentials.json`.
