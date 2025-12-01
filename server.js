@@ -4,6 +4,7 @@ const { relatorioChamadosHandler } = require('./api/relatorio');
 const http = require('http');
 const multer = require('multer');
 const { Storage } = require('@google-cloud/storage');
+const path = require('path');
 // Configuração do Multer para upload em memória
 const upload = multer({ storage: multer.memoryStorage() });
 
