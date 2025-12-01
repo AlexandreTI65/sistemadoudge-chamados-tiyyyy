@@ -16,7 +16,6 @@ const bucketName = process.env.FIREBASE_STORAGE_BUCKET || 'armazenamento-chamado
 const bucket = storage.bucket(bucketName);
 const https = require('https');
 const fs = require('fs');
-const path = require('path');
 const url = require('url');
 const querystring = require('querystring');
 const os = require('os');
