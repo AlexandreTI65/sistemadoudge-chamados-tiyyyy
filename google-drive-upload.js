@@ -43,7 +43,8 @@ async function uploadFileToDrive(fileBuffer, fileName, mimeType, folderId) {
   const drive = google.drive({ version: 'v3', auth });
   const fileMetadata = { name: fileName };
   if (folderId) fileMetadata.parents = [folderId];
-  const media = { mimeType, body: fileBuffer };
+  const { Readable } = require('stream');
+  const media = { mimeType, body: Readable.from(fileBuffer) };
   const res = await drive.files.create({ resource: fileMetadata, media, fields: 'id,webViewLink,webContentLink' });
   return res.data;
 }
