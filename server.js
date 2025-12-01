@@ -266,7 +266,7 @@ async function enviarConfirmacaoSolicitante(dados) {
     mensagem += 'Sua solicitação foi *RECEBIDA* pela T.I. da Pyramid Diamantados.\n\n';
     mensagem += '📋 *RESUMO:*\n';
     mensagem += '• Título: ' + (dados.titulo || '') + '\n';
-    mensagem += '• Tipo: ' + (dados.tipo || '') + '\n';
+    mensagem += '• Setor: ' + (dados.setor || '') + '\n';
     mensagem += '• Prioridade: ' + (dados.prioridade || '') + '\n';
     mensagem += '• Protocolo: #' + protocolo + '\n\n';
     mensagem += '⏰ *PRÓXIMOS PASSOS:*\n';
