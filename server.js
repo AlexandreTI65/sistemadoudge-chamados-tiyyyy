@@ -333,7 +333,16 @@ const server = http.createServer((req, res) => {
             }
 
             // Extrair campos do formulário
-            const dados = req.body;
+            // Mapear campos do formulário para nomes esperados
+            const dados = {
+                nome: req.body.Nome || req.body.nome || '',
+                setor: req.body.Setor || req.body.setor || '',
+                celular: req.body.Celular || req.body.celular || '',
+                ramal: req.body.Ramal || req.body.ramal || '',
+                titulo: req.body.Título || req.body.titulo || '',
+                prioridade: req.body.Prioridade || req.body.prioridade || '',
+                descricao: req.body.Descrição || req.body.descricao || ''
+            };
             let anexoUrl = null;
 
             // Se houver arquivo, fazer upload para Google Drive
