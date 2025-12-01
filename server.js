@@ -481,3 +481,21 @@ const server = http.createServer((req, res) => {
         res.end('Página não encontrada');
     }
 });
+
+// Iniciar servidor escutando em TODAS as interfaces (0.0.0.0) e porta do Render
+server.listen(PORT, '0.0.0.0', () => {
+    console.log('Servidor ouvindo em http://0.0.0.0:' + PORT);
+    const ips = obterIPsRede();
+    if (ips && ips.length) {
+        console.log('Endereços de acesso na rede local:');
+        ips.forEach(ip => console.log('   http://' + ip + ':' + PORT));
+    }
+});
+
+process.on('uncaughtException', (err) => {
+    console.error('❌ Exceção não tratada:', err && err.stack ? err.stack : err);
+});
+
+process.on('unhandledRejection', (reason) => {
+    console.error('❌ Rejeição não tratada:', reason);
+});
