@@ -369,7 +369,7 @@ const server = http.createServer((req, res) => {
                 console.log(`\n📨 NOVO CHAMADO (de ${req.socket.remoteAddress}):`);
                 console.log(`👤 ${dados.nome} (${dados.setor})`);
                 console.log(`📱 ${dados.celular}`);
-                console.log(`🛠️ ${dados.tipo}: ${dados.titulo}`);
+                console.log(`🛠️ ${dados.setor}: ${dados.titulo}`);
                 if (anexoUrl) console.log(`📎 Anexo: ${anexoUrl}`);
 
                 // Envio para T.I. (prioridade)
