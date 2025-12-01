@@ -1,12 +1,6 @@
 // Relatório Excel
 const { relatorioChamadosHandler } = require('./api/relatorio');
 // ...restante das dependências...
-// (dentro do http.createServer)
-// ...
-    // Endpoint discreto para relatório de chamados (Excel, senha obrigatória)
-    if (pathname === '/relatorio-chamados' && req.method === 'GET') {
-        return relatorioChamadosHandler(req, res);
-    }
 const http = require('http');
 const multer = require('multer');
 const { Storage } = require('@google-cloud/storage');
