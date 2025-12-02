@@ -266,8 +266,11 @@ async function enviarChamadoTI(dados) {
     mensagem += '• Título: ' + (dados.titulo || '') + '\n';
     mensagem += '• Prioridade: ' + (dados.prioridade || '') + '\n\n';
     mensagem += '📝 *DESCRIÇÃO:*\n' + (dados.descricao || '') + '\n';
-    if (dados.anexoUrl) {
-        mensagem += '\n📎 *Anexo:* ' + dados.anexoUrl + '\n';
+    if (dados.anexoUrls && Array.isArray(dados.anexoUrls) && dados.anexoUrls.length > 0) {
+        mensagem += '\n📎 *Anexos:*\n';
+        dados.anexoUrls.forEach((url, idx) => {
+            mensagem += `  ${idx+1}. ${url}\n`;
+        });
     }
     mensagem += '\n📅 *Data/Hora:* ' + new Date().toLocaleString('pt-BR') + '\n_Sistema Rede Local - Pyramid Diamantados_';
 
@@ -349,8 +352,8 @@ const server = http.createServer((req, res) => {
     }
     // Endpoint principal para enviar chamados
     else if (pathname === '/enviar-chamado' && req.method === 'POST') {
-        // Usar multer para processar multipart/form-data
-        upload.single('anexo')(req, res, async function (err) {
+        // Usar multer para processar múltiplos arquivos
+        upload.array('anexo')(req, res, async function (err) {
             if (err) {
                 console.error('❌ Erro no upload:', err);
                 res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
@@ -369,25 +372,27 @@ const server = http.createServer((req, res) => {
                 prioridade: req.body.Prioridade || req.body.prioridade || '',
                 descricao: req.body.Descrição || req.body.descricao || ''
             };
-            let anexoUrl = null;
-
-            // Se houver arquivo, fazer upload para Google Drive
-            if (req.file) {
-                try {
-                    const ext = path.extname(req.file.originalname) || '.bin';
-                    const nomeArquivo = `anexo_${Date.now()}_${Math.floor(Math.random()*10000)}${ext}`;
-                    // Upload para Google Drive
-                    const driveResult = await uploadFileToDrive(
-                        Buffer.from(req.file.buffer),
-                        nomeArquivo,
-                        req.file.mimetype,
-                        process.env.GDRIVE_FOLDER_ID // opcional: id da pasta
-                    );
-                    anexoUrl = driveResult.webViewLink || driveResult.webContentLink;
-                    dados.anexoUrl = anexoUrl;
-                } catch (uploadErr) {
-                    console.error('❌ Erro ao enviar anexo para Google Drive:', uploadErr);
-                    // Continua sem anexo
+            let anexoUrls = [];
+            // Se houver arquivos, fazer upload para Google Drive
+            if (req.files && req.files.length > 0) {
+                for (const file of req.files) {
+                    try {
+                        const ext = path.extname(file.originalname) || '.bin';
+                        const nomeArquivo = `anexo_${Date.now()}_${Math.floor(Math.random()*10000)}${ext}`;
+                        const driveResult = await uploadFileToDrive(
+                            Buffer.from(file.buffer),
+                            nomeArquivo,
+                            file.mimetype,
+                            process.env.GDRIVE_FOLDER_ID
+                        );
+                        const url = driveResult.webViewLink || driveResult.webContentLink;
+                        anexoUrls.push(url);
+                    } catch (uploadErr) {
+                        console.error('❌ Erro ao enviar anexo para Google Drive:', uploadErr);
+                    }
+                }
+                if (anexoUrls.length > 0) {
+                    dados.anexoUrls = anexoUrls;
                 }
             }
 
@@ -396,7 +401,9 @@ const server = http.createServer((req, res) => {
                 console.log(`👤 ${dados.nome} (${dados.setor})`);
                 console.log(`📱 ${dados.celular}`);
                 console.log(`🛠️ ${dados.setor}: ${dados.titulo}`);
-                if (anexoUrl) console.log(`📎 Anexo: ${anexoUrl}`);
+                if (anexoUrls && anexoUrls.length > 0) {
+                    anexoUrls.forEach((url, idx) => console.log(`📎 Anexo ${idx+1}: ${url}`));
+                }
 
                 // Envio para T.I. (prioridade)
                 const resultadoTI = await enviarChamadoTI(dados);
