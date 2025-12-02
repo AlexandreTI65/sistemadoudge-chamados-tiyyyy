@@ -263,7 +263,7 @@ async function enviarChamadoTI(dados) {
     mensagem += '• Ramal: ' + (dados.ramal || 'Não informado') + '\n';
     mensagem += '• Celular: ' + (dados.celular || 'Não informado') + '\n\n';
     mensagem += '🛠️ *CHAMADO:*\n';
-        mensagem += '• Título: ' + (dados.titulo || '') + '\n';
+        mensagem += '• Título: ' + (dados.titulo || req.body.Título || req.body.titulo || req.body['Título'] || req.body['titulo'] || req.body['Titulo'] || '') + '\n';
     mensagem += '• Prioridade: ' + (dados.prioridade || '') + '\n\n';
     mensagem += '📝 *DESCRIÇÃO:*\n' + (dados.descricao || '') + '\n';
     if (dados.anexoUrls && Array.isArray(dados.anexoUrls) && dados.anexoUrls.length > 0) {
@@ -273,8 +273,12 @@ async function enviarChamadoTI(dados) {
         });
     }
         const agora = new Date();
-        const dataHora = agora.toLocaleDateString('pt-BR') + ' ' + agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-        mensagem += `\n📅 *Data/Hora:* ${dataHora}\n_Sistema Rede Local - Pyramid Diamantados_`;
+        const dataHoraBrasilia = new Intl.DateTimeFormat('pt-BR', {
+            timeZone: 'America/Sao_Paulo',
+            day: '2-digit', month: '2-digit', year: 'numeric',
+            hour: '2-digit', minute: '2-digit', hour12: false
+        }).format(agora);
+        mensagem += `\n📅 *Data/Hora:* ${dataHoraBrasilia}\n_Sistema Rede Local - Pyramid Diamantados_`;
 
     return await enviarMensagemWhatsApp(numeroDestino, mensagem, 'Chamado Setor', undefined, setor);
 }
