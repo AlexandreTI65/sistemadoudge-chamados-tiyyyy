@@ -263,7 +263,7 @@ async function enviarChamadoTI(dados) {
     mensagem += '• Ramal: ' + (dados.ramal || 'Não informado') + '\n';
     mensagem += '• Celular: ' + (dados.celular || 'Não informado') + '\n\n';
     mensagem += '🛠️ *CHAMADO:*\n';
-    mensagem += '• Título: ' + (dados.titulo || '') + '\n';
+        mensagem += '• Título: ' + (dados.titulo || req.body.Título || req.body.titulo || req.body['Título'] || req.body['titulo'] || '') + '\n';
     mensagem += '• Prioridade: ' + (dados.prioridade || '') + '\n\n';
     mensagem += '📝 *DESCRIÇÃO:*\n' + (dados.descricao || '') + '\n';
     if (dados.anexoUrls && Array.isArray(dados.anexoUrls) && dados.anexoUrls.length > 0) {
@@ -272,7 +272,9 @@ async function enviarChamadoTI(dados) {
             mensagem += `  ${idx+1}. ${url}\n`;
         });
     }
-    mensagem += '\n📅 *Data/Hora:* ' + new Date().toLocaleString('pt-BR') + '\n_Sistema Rede Local - Pyramid Diamantados_';
+        const agora = new Date();
+        const dataHora = agora.toLocaleDateString('pt-BR') + ' ' + agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        mensagem += `\n📅 *Data/Hora:* ${dataHora}\n_Sistema Rede Local - Pyramid Diamantados_`;
 
     return await enviarMensagemWhatsApp(numeroDestino, mensagem, 'Chamado Setor', undefined, setor);
 }
