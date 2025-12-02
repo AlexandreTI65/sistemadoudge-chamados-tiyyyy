@@ -367,6 +367,10 @@ const server = http.createServer((req, res) => {
                 return;
             }
 
+            // LOG DETALHADO PARA DEBUG
+            console.log('🟢 DEBUG req.body:', req.body);
+            console.log('🟢 DEBUG req.files:', req.files);
+
             // Extrair campos do formulário
             // Mapear campos do formulário para nomes esperados
             const dados = {
