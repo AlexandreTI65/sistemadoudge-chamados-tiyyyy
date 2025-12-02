@@ -183,7 +183,8 @@
 
       <div class="field">
         <label for="anexo">📎 Anexos (imagens ou documentos)</label>
-        <input id="anexo" type="file" name="anexo" accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt" multiple />
+        <input id="anexo" type="file" name="anexo[]" accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt" multiple />
+        <span id="contador-anexos" style="font-size:13px;color:#2563eb;margin-top:4px;display:block;"></span>
       </div>
 
       <button type="submit">📨 Enviar Chamado</button>
@@ -195,6 +196,18 @@
   <script>
     const alerta = document.getElementById('alerta');
     const form = document.getElementById('formChamado');
+    const inputAnexo = document.getElementById('anexo');
+    const contadorAnexos = document.getElementById('contador-anexos');
+
+    inputAnexo.addEventListener('change', function() {
+      if (this.files.length === 0) {
+        contadorAnexos.textContent = '';
+      } else if (this.files.length === 1) {
+        contadorAnexos.textContent = '1 arquivo selecionado';
+      } else {
+        contadorAnexos.textContent = `${this.files.length} arquivos selecionados`;
+      }
+    });
 
     form.addEventListener('submit', async function (e) {
       e.preventDefault();
@@ -214,7 +227,7 @@
           alerta.innerHTML = `
             <div style="text-align: center;">
               <strong>${resultado.message}</strong><br>
-              <small>${resultado.backup}</small><br>
+              <small>${resultado.backup || ''}</small><br>
               <div style="margin-top: 10px; font-size: 12px; color: #666;">
                 📱 Chamado enviado para: (11) 94345-6846
               </div>
@@ -222,6 +235,7 @@
           `;
           // Resetar formulário
           form.reset();
+          contadorAnexos.textContent = '';
           // Esconder alerta após 6 segundos
           setTimeout(() => {
             alerta.style.display = 'none';
