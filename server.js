@@ -444,7 +444,7 @@ const server = http.createServer((req, res) => {
                     message: String(mensagemFinal),
                     tiSent: Boolean(sucessoTI),
                     clientSent: Boolean(sucessoCliente),
-                    anexoUrl,
+                    anexoUrls: dados.anexoUrls || [],
                     timestamp: new Date().toLocaleString('pt-BR'),
                     tiError: !sucessoTI ? resultadoTI : undefined
                 }));
