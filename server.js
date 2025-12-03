@@ -358,8 +358,17 @@ const server = http.createServer((req, res) => {
     }
     // Endpoint principal para enviar chamados
     else if (pathname === '/enviar-chamado' && req.method === 'POST') {
-        // Usar multer para processar múltiplos arquivos
-        upload.array('anexo')(req, res, async function (err) {
+        // Usar multer para processar múltiplos arquivos e todos os campos
+        upload.fields([
+            { name: 'anexo', maxCount: 10 },
+            { name: 'Nome' },
+            { name: 'Setor' },
+            { name: 'Celular' },
+            { name: 'Ramal' },
+            { name: 'Título' },
+            { name: 'Prioridade' },
+            { name: 'Descrição' }
+        ])(req, res, async function (err) {
             if (err) {
                 console.error('❌ Erro no upload:', err);
                 res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
