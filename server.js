@@ -397,8 +397,8 @@ const server = http.createServer((req, res) => {
             };
             let anexoUrls = [];
             // Se houver arquivos, fazer upload para Google Drive
-            if (req.files && req.files.length > 0) {
-                for (const file of req.files) {
+            if (req.files && req.files.anexo && req.files.anexo.length > 0) {
+                for (const file of req.files.anexo) {
                     try {
                         const ext = path.extname(file.originalname) || '.bin';
                         const nomeArquivo = `anexo_${Date.now()}_${Math.floor(Math.random()*10000)}${ext}`;
