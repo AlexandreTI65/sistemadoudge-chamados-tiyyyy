@@ -380,16 +380,20 @@ const server = http.createServer((req, res) => {
             console.log('🟢 DEBUG req.body:', req.body);
             console.log('🟢 DEBUG req.files:', req.files);
 
-            // Extrair campos do formulário
-            // Mapear campos do formulário para nomes esperados
+            // Corrigir extração dos campos do formulário
+            // Se algum campo vier como array, pegar o primeiro valor
+            function getCampo(obj, key) {
+                if (obj[key] && Array.isArray(obj[key])) return obj[key][0];
+                return obj[key] || '';
+            }
             const dados = {
-                nome: req.body.Nome || req.body.nome || '',
-                setor: req.body.Setor || req.body.setor || '',
-                celular: req.body.Celular || req.body.celular || '',
-                ramal: req.body.Ramal || req.body.ramal || '',
-                titulo: req.body.Título || req.body.titulo || '',
-                prioridade: req.body.Prioridade || req.body.prioridade || '',
-                descricao: req.body.Descrição || req.body.descricao || ''
+                nome: getCampo(req.body, 'Nome') || getCampo(req.body, 'nome'),
+                setor: getCampo(req.body, 'Setor') || getCampo(req.body, 'setor'),
+                celular: getCampo(req.body, 'Celular') || getCampo(req.body, 'celular'),
+                ramal: getCampo(req.body, 'Ramal') || getCampo(req.body, 'ramal'),
+                titulo: getCampo(req.body, 'Título') || getCampo(req.body, 'titulo'),
+                prioridade: getCampo(req.body, 'Prioridade') || getCampo(req.body, 'prioridade'),
+                descricao: getCampo(req.body, 'Descrição') || getCampo(req.body, 'descricao')
             };
             let anexoUrls = [];
             // Se houver arquivos, fazer upload para Google Drive
