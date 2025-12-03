@@ -391,9 +391,9 @@ const server = http.createServer((req, res) => {
                 setor: getCampo(req.body, 'Setor') || getCampo(req.body, 'setor'),
                 celular: getCampo(req.body, 'Celular') || getCampo(req.body, 'celular'),
                 ramal: getCampo(req.body, 'Ramal') || getCampo(req.body, 'ramal'),
-                titulo: getCampo(req.body, 'Título') || getCampo(req.body, 'titulo'),
+                titulo: getCampo(req.body, 'Título') || getCampo(req.body, 'titulo') || getCampo(req.body, 'TÃ­tulo'),
                 prioridade: getCampo(req.body, 'Prioridade') || getCampo(req.body, 'prioridade'),
-                descricao: getCampo(req.body, 'Descrição') || getCampo(req.body, 'descricao')
+                descricao: getCampo(req.body, 'Descrição') || getCampo(req.body, 'descricao') || getCampo(req.body, 'DescriÃ§Ã£o')
             };
             let anexoUrls = [];
             // Se houver arquivos, fazer upload para Google Drive
